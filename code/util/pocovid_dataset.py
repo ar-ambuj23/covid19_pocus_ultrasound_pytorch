@@ -56,3 +56,12 @@ class PocovidDataset(Dataset):
             sample['image'] = self.__transform(image)
 
         return sample
+    
+    def get_covid_class_idx(self):
+        return self.__covid_class
+    
+    def get_pneu_class_idx(self):
+        return self.__pneu_class
+    
+    def get_regular_class_idx(self):
+        return self.__regular_class
