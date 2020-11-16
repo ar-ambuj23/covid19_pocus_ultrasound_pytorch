@@ -2,20 +2,10 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torchvision.models as models
 
 class VGG16_model(nn.Module):
-    """
-    A network with the following architecture:
-   
-        VGG-16 base model (layers frozen)
-        hidden layer of 64 neurons
-        ReLU
-        dropout(0.5)
-        batch normalization
-        softmax (output)
-        
-    """
     def __init__(self,
                  input_size: tuple = (224, 224, 3),
                  hidden_size: int = 64,
@@ -32,21 +22,27 @@ class VGG16_model(nn.Module):
         - dropout: Float, dropout coefficient
         - num_classes: Integer, number of classes
         """
+        
+        super(VGG16_model, self).__init__()
+        
         # load the VGG16 network
-        model = models.vgg16(pretrained=True)
+        self.model = models.vgg16(pretrained=True)
 
         # freeze weights of base model
-        for param in model.parameters():
+        for param in self.model.parameters():
             param.requires_grad = False
-        print(model.parameters())
-    
-        # construct the head of the model 
-        model.classifier[6] = nn.Sequential(
-            nn.AvgPool2d(4),
-            nn.Flatten(),
-            nn.Linear(hidden_size,hidden_size),
-            nn.BatchNorm2d(hidden_size),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_size, num_classes)
-            )
+            
+        self.avgpool = nn.AvgPool2d(4)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(1000, hidden_size)
+        self.bn = nn.BatchNorm2d(hidden_size)
+        self.dropout = nn.Dropout(dropout)
+        
+    def forward(self,x):
+        x = self.model(x)
+        x = self.flatten(x)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+        #x = self.bn(x) TODO figure out how batch norm is used here
+        return x
