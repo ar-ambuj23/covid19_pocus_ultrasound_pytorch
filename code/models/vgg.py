@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-class VGG16_model(object):
+class VGG16_model(nn.Module):
     """
     A network with the following architecture:
    
@@ -38,6 +38,7 @@ class VGG16_model(object):
         # freeze weights of base model
         for param in model.parameters():
             param.requires_grad = False
+        print(model.parameters())
     
         # construct the head of the model 
         model.classifier[6] = nn.Sequential(
@@ -47,8 +48,5 @@ class VGG16_model(object):
             nn.BatchNorm2d(hidden_size),
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_size, num_classes),
-            nn.Softmax()
+            nn.Linear(hidden_size, num_classes)
             )
-
-        return model
