@@ -10,9 +10,9 @@ import argparse
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data', type=str, default="butterfly")
-    parser.add_argument('-out', type=str, default="pocus_videos/convex")
-    parser.add_argument('-json', type=str, default="data_from_butterfly.json")
+    parser.add_argument('-data', type=str, default="../data/butterfly")
+    parser.add_argument('-out', type=str, default="../data/pocus_videos/convex")
+    parser.add_argument('-json', type=str, default="../data/data_from_butterfly.json")
     args = parser.parse_args()
 
     butterfly_dir = args.data
