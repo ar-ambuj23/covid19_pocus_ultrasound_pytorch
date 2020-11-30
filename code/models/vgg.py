@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
-from torchsummary import summary
+#from torchsummary import summary
 
 class VGG16_model(nn.Module):
     def __init__(self,
@@ -12,7 +12,6 @@ class VGG16_model(nn.Module):
                  hidden_size: int = 64,
                  dropout: float = 0.5,
                  num_classes: int = 3,
-                 verbose = False,
                  **kwargs
                 ):
         """
@@ -35,27 +34,29 @@ class VGG16_model(nn.Module):
         self.model = nn.Sequential(*list(self.model.children())[:-1])
 
         # freeze weights of base model except last cnn layer
+        # model.parameters() does not include max pooling layers
         last_frozen = 25
-        ct = 0
+        count = 0
         for param in self.model.parameters():
-            ct += 1
-            if ct < last_frozen:
+            count += 1
+            if count < last_frozen:
                 param.requires_grad = False
             
         self.avgpool = nn.AvgPool2d(4)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(1000, hidden_size)
+        self.fc1 = nn.Linear(512, hidden_size)
         self.bn = nn.BatchNorm2d(hidden_size)
         self.dropout = nn.Dropout(dropout)
         self.fc2 = nn.Linear(hidden_size, num_classes)
         
-        summary(self.model, (3,224,224))
+        # print summary of base model
+        #summary(self.model, (3,224,224))
         
     def forward(self,x):
         x = self.model(x)
         x = self.flatten(x)
         x = self.fc1(x)
-        #x = self.bn(x) TODO figure out how batch norm is used here
+        x = self.bn(x) 
         x = F.relu(x)
         x = self.dropout(x)
         x = self.fc2(x)
