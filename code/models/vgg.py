@@ -34,9 +34,13 @@ class VGG16_model(nn.Module):
         self.model = models.vgg16(pretrained=True).to(device)
         self.model = nn.Sequential(*list(self.model.children())[:-1])
 
-        # freeze weights of base model
+        # freeze weights of base model except last cnn layer
+        last_frozen = 25
+        ct = 0
         for param in self.model.parameters():
-            param.requires_grad = False
+            ct += 1
+            if ct < last_frozen:
+                param.requires_grad = False
             
         self.avgpool = nn.AvgPool2d(4)
         self.flatten = nn.Flatten()
