@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
+from torchsummary import summary
 
 class VGG16_model(nn.Module):
     def __init__(self,
@@ -11,6 +12,7 @@ class VGG16_model(nn.Module):
                  hidden_size: int = 64,
                  dropout: float = 0.5,
                  num_classes: int = 3,
+                 verbose = False,
                  **kwargs
                 ):
         """
@@ -25,8 +27,12 @@ class VGG16_model(nn.Module):
         
         super(VGG16_model, self).__init__()
         
+        # Use GPU if available
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        
         # load the VGG16 network
-        self.model = models.vgg16(pretrained=True)
+        self.model = models.vgg16(pretrained=True).to(device)
+        self.model = nn.Sequential(*list(self.model.children())[:-1])
 
         # freeze weights of base model
         for param in self.model.parameters():
@@ -38,6 +44,8 @@ class VGG16_model(nn.Module):
         self.bn = nn.BatchNorm2d(hidden_size)
         self.dropout = nn.Dropout(dropout)
         self.fc2 = nn.Linear(hidden_size, num_classes)
+        
+        summary(self.model, (3,224,224))
         
     def forward(self,x):
         x = self.model(x)
