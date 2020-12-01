@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
 
-class VGG16_model_2(nn.Module):
+class VGG16_model(nn.Module):
     def __init__(self,
                  input_size: tuple = (3, 224, 224),
                  hidden_size: int = 64,

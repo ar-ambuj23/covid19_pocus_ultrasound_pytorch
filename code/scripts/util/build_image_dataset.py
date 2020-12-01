@@ -26,9 +26,9 @@ def label_to_dir(lab):
 if __name__ == "__main__":
     # ARGUMENTS
     parser = argparse.ArgumentParser()
-    parser.add_argument('-imgs', type=str, default="../data/pocus_images")
-    parser.add_argument('-out', type=str, default="../data/image_dataset")
-    parser.add_argument('-vids', type=str, default="../data/pocus_videos")
+    parser.add_argument('-imgs', type=str, default="../../data/pocus_images")
+    parser.add_argument('-out', type=str, default="../../data/image_dataset")
+    parser.add_argument('-vids', type=str, default="../../data/pocus_videos")
     parser.add_argument(
         '-fr',
         help="framerate - at how much Hz to sample",
