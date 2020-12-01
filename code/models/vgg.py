@@ -21,7 +21,7 @@ class VGG16_model(nn.Module):
         - num_classes: Integer, number of classes
         """
         
-        super(VGG16_model_2, self).__init__()
+        super(VGG16_model, self).__init__()
         
         # load the VGG16 network
         self.model = models.vgg16(pretrained=True)
