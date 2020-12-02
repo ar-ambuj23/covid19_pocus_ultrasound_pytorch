@@ -1,6 +1,7 @@
 import os
 from torch.utils.data import Dataset
 from PIL import Image
+from torchvision.transforms import ToTensor
 
 class PocovidDataset(Dataset):
     """Subclass of Dataset for POCOVID-Net data"""
@@ -28,18 +29,42 @@ class PocovidDataset(Dataset):
         covid_items = dir_items(covid_dir)
         pneu_items = dir_items(pneu_dir)
         regular_items = dir_items(regular_dir)
+
+        num_covid = 0
+        num_pneu = 0
+        num_regular = 0
       
-        num_covid = len(covid_items)
-        num_pneu = len(pneu_items)
-        num_regular = len(regular_items)
-      
+        # FIXME: 
+        #  1) Avoid calling the ToTensor() transformation and instead use information from PIL
+        #  to determine the number of channels in an image. (This should increase speed.)
+        #  2) Right now we are dropping images that do not have exactly 3 channels. In the future,
+        #  we may want to support 4 channel images, e.g. by removing the alpha channel or compositing 
+        #  against a black (or maybe white?) background. 
+        
         self.__img_info = []
-        for covid_filename in covid_items:
-            self.__img_info.append((covid_filename,self.__covid_class))
+        for covid_filename in covid_items: 
+            image = Image.open(covid_filename)
+            to_tensor_tsfm = ToTensor()
+            im_tensor = to_tensor_tsfm(image)
+            if im_tensor.shape[0] == 3:
+                self.__img_info.append((covid_filename,self.__covid_class))
+                num_covid += 1
+            
         for pneu_filename in pneu_items:
-            self.__img_info.append((pneu_filename,self.__pneu_class))
+            image = Image.open(pneu_filename)
+            to_tensor_tsfm = ToTensor()
+            im_tensor = to_tensor_tsfm(image)
+            if im_tensor.shape[0] == 3:
+                self.__img_info.append((pneu_filename,self.__pneu_class))
+                num_pneu += 1
+                
         for regular_filename in regular_items:
-            self.__img_info.append((regular_filename,self.__regular_class)) 
+            image = Image.open(regular_filename)
+            to_tensor_tsfm = ToTensor()
+            im_tensor = to_tensor_tsfm(image)
+            if im_tensor.shape[0] == 3:
+                self.__img_info.append((regular_filename,self.__regular_class)) 
+                num_regular += 1
 
         self.__transform = transform
         self.__num_images = num_covid + num_pneu + num_regular
