@@ -50,10 +50,12 @@ class PocovidDataset(Dataset):
     def __getitem__(self,idx):
         img_name, img_class = self.__img_info[idx]
         image = Image.open(img_name)
-        sample = {'image': image, 'class': img_class} 
+#         sample = {'image': image, 'class': img_class} 
+        sample = [image, img_class]
 
         if self.__transform:
-            sample['image'] = self.__transform(image)
+#             sample['image'] = self.__transform(image)
+            sample = [self.__transform(image), img_class]
 
         return sample
     
