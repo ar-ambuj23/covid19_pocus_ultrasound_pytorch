@@ -13,21 +13,21 @@ ap.add_argument(
     "-d",
     "--data_dir",
     type=str,
-    default="../data/image_dataset",
+    default="image_dataset",
     help=("Raw data path. Expects 3 or 4 subfolders with classes")
 )
 ap.add_argument(
     "-o",
     "--output_dir",
     type=str,
-    default="../data/cross_validation/",
+    default="cross_validation/",
     help=("Output path where images for cross validation will be stored.")
 )
 ap.add_argument(
     "-v",
     "--video_dir",
     type=str,
-    default="../data/pocus_videos/convex/",
+    default="pocus_videos/convex/",
     help=("Path where the videos of the database are stored")
 )
 ap.add_argument(
@@ -96,7 +96,7 @@ for classe in os.listdir(DATA_DIR):
         shutil.copy(os.path.join(DATA_DIR, classe, in_file), split_path)
 
 
-def check_crossval(cross_val_directory="../data/cross_validation"):
+def check_crossval(cross_val_directory="cross_validation"):
     """
     Test method to check a cross validation split (prints number of unique f)
     """
