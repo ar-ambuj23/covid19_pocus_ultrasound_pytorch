@@ -6,30 +6,31 @@ from torchvision.transforms import ToTensor
 class PocovidDataset(Dataset):
     """Subclass of Dataset for POCOVID-Net data"""
   
-    def __init__(self, data_path_info, transform=None):
+    def __init__(self, root_dir, transform=None):
         """
         Args:
-          data_path_info (dict): Dictionary containing the paths and labels for images
+          root_dir (string): Directory with all the images.
           transform (callable, optional): Optional transform to be applied
               on a sample.
         """
         self.__transform = transform
-        
+        covid_dir = root_dir + '/' + 'covid'
+        pneu_dir = root_dir + '/' + 'pneumonia'
+        regular_dir = root_dir + '/' + 'regular'
+
         self.__covid_class = 0
         self.__pneu_class = 1
         self.__regular_class = 2
 
-        covid_items = []
-        pneu_items = []
-        regular_items = []
+        # Modified code snippet from Daniel Stutzbach:
+        # https://stackoverflow.com/a/2632251
+        dir_items = lambda d: [d + "/" + name for name in os.listdir(d) if os.path.isfile(d + "/" + name)]
 
-        for i in range(len(data_path_info['path_list'])):
-            if(data_path_info['label_list'][i] == 'covid'):
-                covid_items.append(data_path_info['path_list'][i])
-            elif(data_path_info['label_list'][i] == 'covid'):
-                pneu_items.append(data_path_info['path_list'][i])
-            else:
-                regular_items.append(data_path_info['path_list'][i])
+        covid_items = dir_items(covid_dir)
+        pneu_items = dir_items(pneu_dir)
+        regular_items = dir_items(regular_dir)
+        
+        print(covid_items)
 
         num_covid = 0
         num_pneu = 0
