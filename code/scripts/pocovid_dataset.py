@@ -93,3 +93,9 @@ class PocovidDataset(Dataset):
     
     def get_regular_class_idx(self):
         return self.__regular_class
+    
+    def get_class_map(self):
+        class_map = {self.get_covid_class_idx() : 'covid',
+            self.get_pneu_class_idx() : 'pneumonia',
+            self.get_regular_class_idx() : 'regular'}
+        return class_map
