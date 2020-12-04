@@ -1,14 +1,11 @@
-#POCOVID-Net model in pytorch
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
-#from torchsummary import summary
 
 class VGG16_model(nn.Module):
     def __init__(self,
-                 input_size: tuple = (224, 224, 3),
+                 input_size: tuple = (3, 224, 224),
                  hidden_size: int = 64,
                  dropout: float = 0.5,
                  num_classes: int = 3,
@@ -26,12 +23,8 @@ class VGG16_model(nn.Module):
         
         super(VGG16_model, self).__init__()
         
-        # Use GPU if available
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        
         # load the VGG16 network
-        self.model = models.vgg16(pretrained=True).to(device)
-        self.model = nn.Sequential(*list(self.model.children())[:-1])
+        self.model = models.vgg16(pretrained=True)
 
         # freeze weights of base model except last cnn layer
         # model.parameters() does not include max pooling layers
@@ -41,23 +34,25 @@ class VGG16_model(nn.Module):
             count += 1
             if count < last_frozen:
                 param.requires_grad = False
-            
+                
+        # Taking only sequential part
+        self.model = self.model.features
+    
         self.avgpool = nn.AvgPool2d(4)
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(512, hidden_size)
-        self.bn = nn.BatchNorm2d(hidden_size)
+        self.bn = nn.BatchNorm1d(hidden_size)
+        self.relu = nn.ReLU(hidden_size)
         self.dropout = nn.Dropout(dropout)
         self.fc2 = nn.Linear(hidden_size, num_classes)
         
-        # print summary of base model
-        #summary(self.model, (3,224,224))
-        
     def forward(self,x):
         x = self.model(x)
+        x = self.avgpool(x)
         x = self.flatten(x)
         x = self.fc1(x)
         x = self.bn(x) 
-        x = F.relu(x)
+        x = self.relu(x)
         x = self.dropout(x)
         x = self.fc2(x)
         return x
