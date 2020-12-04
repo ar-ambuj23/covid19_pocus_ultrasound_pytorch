@@ -26,7 +26,7 @@ class PocovidDataset(Dataset):
         for i in range(len(data_path_info['path_list'])):
             if(data_path_info['label_list'][i] == 'covid'):
                 covid_items.append(data_path_info['path_list'][i])
-            elif(data_path_info['label_list'][i] == 'covid'):
+            elif(data_path_info['label_list'][i] == 'pneumonia'):
                 pneu_items.append(data_path_info['path_list'][i])
             else:
                 regular_items.append(data_path_info['path_list'][i])
