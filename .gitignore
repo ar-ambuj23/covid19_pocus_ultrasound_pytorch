@@ -7,3 +7,5 @@ code/data/cross_validation*
 code/data/cross_val.json
 
 code/scripts/__pycache__/
+
+code/trained_models
