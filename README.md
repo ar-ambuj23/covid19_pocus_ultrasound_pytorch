@@ -47,18 +47,38 @@ We will be using the dataset provided by the authors of the original **POCOVID-N
 
 ## Usage
 
-* Navigate to the **code** folder
-* Install the requirements using
+### Initial Setup
+* Clone the repository to your local machine
+
+```bash
+git clone https://github.com/ar-ambuj23/covid19_pocus_ultrasound_pytorch.git
+```
+* Navigate to the **code** folder and install the requirements using
 
 ```bash
 pip install -r requirements.txt
 ```
+
+### Data Creation
+* The repository will come with most of the data required for training however to replicate the results in our project, additional data must be manually downloaded from **Butterfly**.
+  - Navigate to [this](https://www.butterflynetwork.com/covid19/covid-19-ultrasound-gallery) link and scroll to the bottom of the page and click **Download Videos**.
+
+* Place this zipped folder in **code/data** folder and the run the following
+
+```bash
+. parse_butterfly.sh
+```
+- This will unzip the butterfly data folder, process the butterfly video files, organize the data set, and split it into 5 folds for cross-validation. After running successfully, a new directory named **cross_validation** should be created in **/code/data** location.
+
 
 ### To train a new model
 Run this command from the **code** folder
 ```python
 python scripts/train.py [--data_dir DAT_DIR] [--model_name MODEL_NAME] [--model_save_dir MODEL_SAVE_DIR] [--fold FOLD] [--learning_rate LEARNING_RATE] [--epochs EPOCHS] [--batch_size BATCH_SIZE] [--img_width IMG_WIDTH] [--img_width IMG_WIDTH]
 ```
+
+### Results
+* Navigate to **code/scripts/{model}_trained.ipynb** to see the results of different models.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
