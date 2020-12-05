@@ -74,7 +74,7 @@ pip install -r requirements.txt
 
 
 ### To train a new model
-Run this command from the **code** folder
+* Run this command from the **code** folder
 ```python
 python scripts/train.py [--data_dir DATA_DIR] [--model_name MODEL_NAME] [--model_save_dir MODEL_SAVE_DIR] [--fold FOLD] [--learning_rate LEARNING_RATE] [--epochs EPOCHS] [--batch_size BATCH_SIZE] [--img_width IMG_WIDTH] [--img_height IMG_HEIGHT]
 ```
