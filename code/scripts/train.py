@@ -14,6 +14,10 @@ import sys
 sys.path.append('../models')
 from vgg import VGG16_model
 
+import sys
+sys.path.append('../scripts')
+from pocovid_dataset import PocovidDataset
+
 import os
 import random
 from imutils import paths
@@ -69,6 +73,9 @@ class Trainer():
         self.batch_size = batch_size
         self.fold = fold
         
+        self.image_width = image_width
+        self.image_height = image_height
+        
         self.criterion = nn.CrossEntropyLoss().to(device)
         self.optimizer = optim.Adam(params = self.model.parameters(), lr=self.lr) #experiment with weigth_decay
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1, gamma=0.95) # use scheduler
@@ -115,11 +122,11 @@ class Trainer():
         
         train_path_info, test_path_info = self.get_train_test_info()
 
-        train_transform = transforms.Compose([transforms.Resize((IMG_WIDTH, IMG_HEIGHT)),
+        train_transform = transforms.Compose([transforms.Resize((self.image_width, self.image_height)),
                                            transforms.RandomAffine(10,translate=(0.1,0.1)),
                                            transforms.ToTensor()])
 
-        test_transform = transforms.Compose([transforms.Resize((IMG_WIDTH, IMG_HEIGHT)),
+        test_transform = transforms.Compose([transforms.Resize((self.image_width, self.image_height)),
                                            transforms.ToTensor()])
 
         trainset = PocovidDataset(train_path_info, transform = train_transform)
@@ -135,7 +142,6 @@ class Trainer():
                                         batch_size=self.batch_size)
         
         return train_loader, test_loader
-        
     
     def train(self, iterator):
         """
@@ -215,8 +221,8 @@ class Trainer():
 
             start_time = time.time()
 
-            train_loss = self.train(train_loader)
-            valid_loss = self.evaluate(test_loader)
+            train_loss = self.train(self.train_loader)
+            valid_loss = self.evaluate(self.test_loader)
 
             epoch_mins, epoch_secs = self.epoch_time(start_time, time.time())
 
@@ -237,7 +243,7 @@ class Trainer():
             print('-'*100)
         print(best_valid_loss)
         
-    def evaluate(self, iterator=self.test_loader, proba=False, one_batch=False):
+    def evaluate_model(self, iterator=self.test_loader, proba=False, one_batch=False):
     
         self.model.eval()
 
@@ -277,7 +283,7 @@ class Trainer():
     
     def visualize_test_samples(self):
     
-        images, true_labels, pred_labels, pred_probs = self.evaluate(self.test_loader, proba=True, one_batch=True)
+        images, true_labels, pred_labels, pred_probs = self.evaluate_model(proba=True, one_batch=True)
 
         true_labels = true_labels.cpu().numpy()
         pred_labels = pred_labels.cpu().numpy()
@@ -311,7 +317,7 @@ class Trainer():
         """
         self.training()
         
-        images, true_labels, pred_labels, pred_probs = self.evaluate(proba=True)
+        images, true_labels, pred_labels, pred_probs = self.evaluate_model(proba=True)
         
         metrics = Metrics(images, true_labels, pred_labels, pred_probs, self.classes)
 
