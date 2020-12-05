@@ -1,6 +1,8 @@
+*This project is in a WIP state and will be completed soon!*
+
 # Goal
 
-The goal of this repository is to replicate and improve the findings of [this](https://github.com/jannisborn/covid19_pocus_ultrasound) repository. 
+The goal of this repository is to replicate and improve the findings of [this](https://github.com/jannisborn/covid19_pocus_ultrasound) repository.
 
 ## What is the problem?
 
@@ -53,7 +55,7 @@ We will be using the dataset provided by the authors of the original **POCOVID-N
 ```bash
 git clone https://github.com/ar-ambuj23/covid19_pocus_ultrasound_pytorch.git
 ```
-* Navigate to the **code** folder and install the requirements using
+* Install the requirements using
 
 ```bash
 pip install -r requirements.txt
