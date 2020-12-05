@@ -24,9 +24,48 @@ from imutils import paths
 from collections import defaultdict 
 import numpy as np
 import time
+import argparse
 
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+
+
+        
+# ### Fixing Random Seeds
+SEED = 1234
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed(SEED)
+torch.backends.cudnn.deterministic = True
+
+# Construct the argument parser and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument('-d', '--data_dir', type=str, default='../data/cross_validation', help='path to input cross-validation dataset')
+ap.add_argument('-m', '--model_name', type=str, default='vgg16')
+ap.add_argument('-s', '--model_save_dir', type=str, default='../trained_models')
+ap.add_argument('-f', '--fold', type=int, default='0', help='fold to take as test data')
+ap.add_argument('-lr', '--learning_rate', type=float, default=1e-4)
+ap.add_argument('-ep', '--epochs', type=int, default=20)
+ap.add_argument('-bs', '--batch_size', type=int, default=16)
+ap.add_argument('-iw', '--img_width', type=int, default=224)
+ap.add_argument('-ih', '--img_height', type=int, default=224)
+args = vars(ap.parse_args())
+
+
+# ### Initializing parameters
+CROSS_VAL_DIR = args['data_dir']
+MODEL_NAME = args['model_name']
+MODEL_SAVE_DIR = args['model_save_dir']
+FOLD = args['fold']
+LR = args['learning_rate']
+N_EPOCHS = args['epochs']
+BATCH_SIZE = args['batch_size']
+IMG_WIDTH = args['img_width']
+IMG_HEIGHT = args['img_height']
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 
 
 # ### The Metrics Class
@@ -48,7 +87,7 @@ class Metrics():
         cm.plot(values_format = 'd', cmap = 'Blues', ax = ax)
         plt.xticks(rotation = 20)
     
-    def get_confusion_matrix(self)
+    def get_confusion_matrix(self):
         cm = confusion_matrix(self.true_labels.cpu().numpy(), self.pred_labels.cpu().numpy())
         
     def get_classification_report(self):
@@ -72,6 +111,7 @@ class Trainer():
         self.n_epochs = n_epochs
         self.batch_size = batch_size
         self.fold = fold
+        self.cross_val_dir = cross_val_dir
         
         self.image_width = image_width
         self.image_height = image_height
@@ -95,7 +135,7 @@ class Trainer():
         Get information dictionaries for train and test data
         """
     
-        imagePaths = list(paths.list_images(cross_val_dir))
+        imagePaths = list(paths.list_images(self.cross_val_dir))
 
         train_path_info = defaultdict(list)
         test_path_info = defaultdict(list)
@@ -243,7 +283,10 @@ class Trainer():
             print('-'*100)
         print(best_valid_loss)
         
-    def evaluate_model(self, iterator=self.test_loader, proba=False, one_batch=False):
+    def evaluate_model(self, iterator=None, proba=False, one_batch=False):
+        
+        if iterator is None:
+            iterator = self.test_loader
     
         self.model.eval()
 
@@ -358,42 +401,6 @@ class TrainedModel():
         To print the network architecture
         """
         print(self.model)
-        
-        
-# ### Fixing Random Seeds
-SEED = 1234
-random.seed(SEED)
-np.random.seed(SEED)
-torch.manual_seed(SEED)
-torch.cuda.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
-
-# Construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument('-d', '--data_dir', typr=str, default='../data/cross_validation', help='path to input cross-validation dataset')
-ap.add_argument('-m', '--model_name', type=str, default='vgg16')
-ap.add_argument('-s', '--model_save_dir', type=str, default='../trained_models')
-ap.add_argument('-f', '--fold', type=int, default='0', help='fold to take as test data')
-ap.add_argument('-lr', '--learning_rate', type=float, default=1e-4)
-ap.add_argument('-ep', '--epochs', type=int, default=20)
-ap.add_argument('-bs', '--batch_size', type=int, default=16)
-ap.add_argument('-iw', '--img_width', type=int, default=224)
-ap.add_argument('-ih', '--img_height', type=int, default=224)
-args = vars(ap.parse_args())
-
-
-# ### Initializing parameters
-CROSS_VAL_DIR = args['data_dir']
-MODEL_NAME = args['model_name']
-MODEL_SAVE_DIR = args['model_save_dir']
-FOLD = args['fold']
-LR = args['learning_rate']
-N_EPOCHS = args['epochs']
-BATCH_SIZE = args['batch_size']
-IMG_WIDTH = args['img_width']
-IMG_HEIGHT = args['img_height']
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Start the training
 trainer = Trainer()
