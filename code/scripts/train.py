@@ -9,6 +9,7 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
+from torchsummary import summary
 
 import sys
 sys.path.append('../models')
@@ -76,7 +77,7 @@ class Metrics():
         self.images = images
         self.true_labels = true_labels
         self.pred_labels = pred_labels
-        seld.pred_probs = pred_probs
+        self.pred_probs = pred_probs
         self.classes = classes
         
     def plot_confusion_matrix(self):
@@ -89,9 +90,11 @@ class Metrics():
     
     def get_confusion_matrix(self):
         cm = confusion_matrix(self.true_labels.cpu().numpy(), self.pred_labels.cpu().numpy())
+        return cm
         
     def get_classification_report(self):
         cr = classification_report(self.true_labels.cpu().numpy(), self.pred_labels.cpu().numpy(), target_names=self.classes)
+        return cr
 
 # ### The Trainer Class
 class Trainer():
@@ -159,6 +162,7 @@ class Trainer():
         """
         Get the train and test data according to the fold
         """
+        print('Loading the image data...')
         
         train_path_info, test_path_info = self.get_train_test_info()
 
@@ -180,6 +184,13 @@ class Trainer():
 
         test_loader = torch.utils.data.DataLoader(testset, num_workers=num_workers, shuffle=True,
                                         batch_size=self.batch_size)
+        
+        print('Image data is loaded with fold {} as the test data'.format(self.fold))
+        print('Number of training images:', len(trainset))
+        print('Number of testing images:', len(testset))
+        print('*'*100)
+        print('The classes are:', self.classes)
+        print('*'*100)
         
         return train_loader, test_loader
     
@@ -251,6 +262,12 @@ class Trainer():
         
         self.train_loader, self.test_loader = self.get_train_test_loaders()
         
+        print('Training the {} model with the following architecture:'.format(self.model_name))
+        print(summary(self.model, (3, self.image_width, self.image_height)))
+        print('*'*100)
+        print('Starting the training...')
+        print('*'*100)
+        
         # Create the model save dir if it already doesn't exist
         if not os.path.exists(self.model_save_dir):
             os.makedirs(self.model_save_dir)
@@ -280,8 +297,10 @@ class Trainer():
             print(f'Time: {epoch_mins}m {epoch_secs}s') 
             print(f'Train Loss: {train_loss:.3f}')
             print(f'Val   Loss: {valid_loss:.3f}')
-            print('-'*100)
-        print(best_valid_loss)
+            print('-'*60)
+        print('The best validation loss is', best_valid_loss)
+        print('*'*100)
+
         
     def evaluate_model(self, iterator=None, proba=False, one_batch=False):
         
@@ -366,9 +385,11 @@ class Trainer():
 
         cm = metrics.get_confusion_matrix()
         print('The confusion matrix is:\n', cm)
+        print('*'*100)
         
         cr = metrics.get_classification_report()
         print('The classification report is:\n', cr)
+        print('*'*100)
         
 # ### The Trained Model Class
         
@@ -404,6 +425,9 @@ class TrainedModel():
 
 # Start the training
 trainer = Trainer()
+print('*'*100)
+print('Training {} model with parameters: {}'.format(MODEL_NAME, args))
+print('*'*100)
 trainer.start_training()
 
 # End of script
