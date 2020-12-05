@@ -105,8 +105,8 @@ class Trainer():
         
         if(model_name=='vgg16'):
             self.model = VGG16_model().to(device)
-        elif(model_name=='resnet50'):
-            self.model = RESNET50_model().to(device)
+        elif(model_name=='resnet18'):
+            self.model = resnet18_model().to(device)
         else:
             print('Select models from the following:\n 1) vgg16\n 2) resnet50')
                     
