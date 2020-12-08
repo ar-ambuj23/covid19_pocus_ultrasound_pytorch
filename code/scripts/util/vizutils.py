@@ -9,11 +9,11 @@ def get_selector_matrix(y, num_batch, num_classes):
     return sel_mat
 
 # Assumes X is the batch of input images, A is the "selector" matrix
-def img_grad(X, A, model):
+def img_grad(X, A, model, reg_lambda=0):
     # do the forward pass
     S = model(X) # S holds the unnormalized scores for each image in the batch
     t = torch.diag(torch.matmul(S, A))
-    L = torch.sum(t)
+    L = torch.sum(t) - reg_lambda*torch.pow(torch.norm(X,2),2) # note the NEGATIVE sign!
     # do the backwards pass, and extract the gradient
     L.backward()
     w = X.grad.detach().clone()
