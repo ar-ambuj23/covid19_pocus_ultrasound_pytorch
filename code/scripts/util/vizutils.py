@@ -43,10 +43,7 @@ def img_grad(X, A, model, reg_lambda=0):
     w = X.grad.detach().clone()
 
     X.grad.zero_() # set gradients to zero after doing the backwards pass
-    
-    #if monochrome:
         
-    
     return w # think of this as dL/dX
 
 def compute_saliency_maps(X, y, num_classes, model):
@@ -104,6 +101,7 @@ def class_visualization(target_y, model, device, num_classes, channel_means, cha
     - show_every: How often to show the intermediate result
     """
     model.to(device)
+    monochrome = kwargs.pop('monochrome', False)
     l2_reg = kwargs.pop('l2_reg', 1e-3)
     learning_rate = kwargs.pop('learning_rate', 25)
     num_iterations = kwargs.pop('num_iterations', 100)
@@ -112,13 +110,15 @@ def class_visualization(target_y, model, device, num_classes, channel_means, cha
     show_every = kwargs.pop('show_every', 25)
 
     # Randomly initialize the image as a PyTorch Tensor, and make it requires gradient.
-    rand_channel = torch.randn(1, 1, 224, 224).mul_(1.0)
-    img = torch.zeros(1,3,224,224)
-    img[0,0,:,:] = rand_channel
-    img[0,1,:,:] = rand_channel
-    img[0,2,:,:] = rand_channel
-    img = img.to(device).requires_grad_()
-    #img = torch.randn(1, 3, 224, 224).mul_(1.0).to(device).requires_grad_()
+    if monochrome:
+        rand_channel = torch.randn(1, 1, 224, 224).mul_(1.0)
+        img = torch.zeros(1,3,224,224)
+        img[0,0,:,:] = rand_channel
+        img[0,1,:,:] = rand_channel
+        img[0,2,:,:] = rand_channel
+        img = img.to(device).requires_grad_()
+    else:
+        img = torch.randn(1, 3, 224, 224).mul_(1.0).to(device).requires_grad_()
 
     ########################################################################
     #                             START OF MY CODE                         #
@@ -143,7 +143,12 @@ def class_visualization(target_y, model, device, num_classes, channel_means, cha
         ########################################################################
     
         # Compute the gradient of S_c(I) - λ*norm(I)^2 . Be careful of the sign!
-        g = img_grad(img,A,model,reg_lambda=l2_reg)
+        g = img_grad(img,A,model,reg_lambda=l2_reg) 
+        if monochrome:
+            g_avg = torch.mean(g,1) # average over channels
+            g[:,0,:,:] = g_avg
+            g[:,1,:,:] = g_avg
+            g[:,2,:,:] = g_avg
         with torch.no_grad():
             # compute gradient step (using a normalized gradient?)
             d_img = learning_rate * g / torch.norm(g,2)
