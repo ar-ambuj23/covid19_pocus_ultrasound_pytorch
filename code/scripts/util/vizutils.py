@@ -44,6 +44,9 @@ def img_grad(X, A, model, reg_lambda=0):
 
     X.grad.zero_() # set gradients to zero after doing the backwards pass
     
+    #if monochrome:
+        
+    
     return w # think of this as dL/dX
 
 def compute_saliency_maps(X, y, num_classes, model):
@@ -109,7 +112,13 @@ def class_visualization(target_y, model, device, num_classes, channel_means, cha
     show_every = kwargs.pop('show_every', 25)
 
     # Randomly initialize the image as a PyTorch Tensor, and make it requires gradient.
-    img = torch.randn(1, 3, 224, 224).mul_(1.0).to(device).requires_grad_()
+    rand_channel = torch.randn(1, 1, 224, 224).mul_(1.0)
+    img = torch.zeros(1,3,224,224)
+    img[0,0,:,:] = rand_channel
+    img[0,1,:,:] = rand_channel
+    img[0,2,:,:] = rand_channel
+    img = img.to(device).requires_grad_()
+    #img = torch.randn(1, 3, 224, 224).mul_(1.0).to(device).requires_grad_()
 
     ########################################################################
     #                             START OF MY CODE                         #
