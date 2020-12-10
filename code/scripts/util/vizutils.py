@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -83,6 +84,54 @@ def compute_saliency_maps(X, y, num_classes, model):
     ##############################################################################
     return saliency
 
+def occlusion_sensitivy(img, correct_cls, model, occ_val=0.0, occ_size=None):
+    """
+    Input:
+        - img: Input image of shape 1x3xHxW
+        - correct_cls: integer index denoting the correct class (known a priori) of the image
+        - model: A pretrained CNN that will be used to compute the saliency map
+        - occ_val: Floating-point value to set the occluded pixels to, for all channels. Default 0.  
+        - occ_size: Integer setting the side length of the occluder. If None, set to 1/5 the image width.
+    """
+    
+    def eval_correct_P(test_img):
+        out = model(test_img)
+        probs = F.softmax(out, dim = -1).squeeze()
+        return probs[correct_cls].item()
+    
+    model.eval()
+    with torch.no_grad():
+        unoccluded_P = eval_correct_P(img)
+
+        H = img.shape[2]
+        W = img.shape[3]
+
+        if not occ_size:
+            occ_size = W // 5 # this seems like a reasonable default value? 
+        if occ_size % 2 == 0: # if occ_size is even, make it odd
+            occ_size += 1
+            
+        sensitivity_map = torch.zeros(H,W)
+        
+        for r in range(H):
+            print("Row: " + str(r))
+            for c in range(W):
+                # occlude a square with "radius" occ_size//2, centered at (r,c)
+                img_occ = img.detach().clone()
+                occ_radius = occ_size // 2
+                min_r = max(0,r - occ_radius)
+                max_r = min(H,r + occ_radius)
+                min_c = max(0,c - occ_radius)
+                max_c = min(W,c + occ_radius)
+                img_occ[0,:,min_r:max_r,min_c:max_c] = occ_val # PyTorch ranges don't include the end
+
+                # store difference between occluded and unoccluded probability in output buffer
+                sensitivity_map[r,c] = eval_correct_P(img_occ) - unoccluded_P
+        
+        return sensitivity_map
+                
+        
+    
 def class_visualization(target_y, model, device, num_classes, channel_means, channel_std_devs, deprocess_func, class_names_dict, **kwargs):
     """
     Generate an image to maximize the score of target_y under a pretrained model.
