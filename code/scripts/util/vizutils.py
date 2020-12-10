@@ -35,7 +35,7 @@ def get_selector_matrix(y, num_batch, num_classes):
 # Assumes X is the batch of input images, A is the "selector" matrix
 def img_grad(X, A, model, reg_lambda=0):
     # do the forward pass
-    S = model(X) # S holds the unnormalized scores for each image in the batch
+    S, _ = model(X) # S holds the unnormalized scores for each image in the batch
     # print(S)
     t = torch.diag(torch.matmul(S, A))
     L = torch.sum(t) - reg_lambda*torch.pow(torch.norm(X,2),2) # note the NEGATIVE sign!
@@ -95,7 +95,7 @@ def occlusion_sensitivy(img, correct_cls, model, occ_val=0.0, occ_size=None, str
     """
     
     def eval_correct_P(test_img):
-        out = model(test_img)
+        out, _ = model(test_img)
         probs = F.softmax(out, dim = -1).squeeze()
         return probs[correct_cls].item()
     
