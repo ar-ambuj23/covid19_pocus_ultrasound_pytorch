@@ -84,7 +84,7 @@ def compute_saliency_maps(X, y, num_classes, model):
     ##############################################################################
     return saliency
 
-def occlusion_sensitivy(img, correct_cls, model, occ_val=0.0, occ_size=None):
+def occlusion_sensitivy(img, correct_cls, model, occ_val=0.0, occ_size=None, stride=2):
     """
     Input:
         - img: Input image of shape 1x3xHxW
@@ -111,11 +111,15 @@ def occlusion_sensitivy(img, correct_cls, model, occ_val=0.0, occ_size=None):
         if occ_size % 2 == 0: # if occ_size is even, make it odd
             occ_size += 1
             
-        sensitivity_map = torch.zeros(H,W)
+        sensitivity_map = torch.zeros(H//stride,W//stride)
         
-        for r in range(H):
+        r = 0
+        out_r = 0
+        while r < H:
             print("Row: " + str(r))
-            for c in range(W):
+            c = 0
+            out_c = 0
+            while c < W:
                 # occlude a square with "radius" occ_size//2, centered at (r,c)
                 img_occ = img.detach().clone()
                 occ_radius = occ_size // 2
@@ -126,7 +130,11 @@ def occlusion_sensitivy(img, correct_cls, model, occ_val=0.0, occ_size=None):
                 img_occ[0,:,min_r:max_r,min_c:max_c] = occ_val # PyTorch ranges don't include the end
 
                 # store difference between occluded and unoccluded probability in output buffer
-                sensitivity_map[r,c] = eval_correct_P(img_occ) - unoccluded_P
+                sensitivity_map[out_r,out_c] = eval_correct_P(img_occ) - unoccluded_P
+                out_c += 1
+                c += stride
+            out_r += 1
+            r += stride
         
         return sensitivity_map
                 
