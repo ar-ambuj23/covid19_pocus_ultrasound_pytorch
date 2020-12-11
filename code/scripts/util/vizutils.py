@@ -140,7 +140,7 @@ def occlusion_sensitivy(img, correct_cls, model, occ_val=0.0, occ_size=None, str
                 
         
     
-def class_visualization(target_y, model, device, num_classes, channel_means, channel_std_devs, deprocess_func, class_names_dict, **kwargs):
+def class_visualization(target_y, model, device, num_classes, channel_means, channel_std_devs, deprocess_func, class_names_dict, savepath, **kwargs):
     """
     Generate an image to maximize the score of target_y under a pretrained model.
 
@@ -233,6 +233,7 @@ def class_visualization(target_y, model, device, num_classes, channel_means, cha
         plt.title('%s\nIteration %d / %d' % (class_name, t + 1, num_iterations))
         plt.gcf().set_size_inches(4, 4)
         plt.axis('off')
+        plt.savefig(savepath)
         plt.show()
 
     return deprocess_func(img.data.cpu())
