@@ -1,5 +1,3 @@
-*This project is in a WIP state and will be completed soon!*
-
 # Goal
 
 The goal of this repository is to replicate and improve the findings of [this](https://github.com/jannisborn/covid19_pocus_ultrasound) repository.
